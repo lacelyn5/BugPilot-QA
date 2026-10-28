@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}TC-{{ test_case.id|stringformat:"03d" }} · {{ test_case.title }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'test_list' %}">Test cases</a><span>/</span><a href="{% url 'project_detail' test_case.project.pk %}">{{ test_case.project.name }}</a><span>/</span><span>TC-{{ test_case.id|stringformat:"03d" }}</span></div>
+<section class="panel detail-panel">
+  <div class="detail-topline"><span class="mono">TC-{{ test_case.id|stringformat:"03d" }}</span><span class="pill">{{ test_case.get_test_type_display }}</span>{% if test_case.is_active %}<span class="pill pill-active">Active</span>{% else %}<span class="pill">Inactive</span>{% endif %}</div>
+  <h2>{{ test_case.title }}</h2>
+  <p class="muted">Project: <a href="{% url 'project_detail' test_case.project.pk %}">{{ test_case.project.name }}</a>{% if test_case.project.base_url %} · <a href="{{ test_case.project.base_url }}" target="_blank" rel="noopener noreferrer">Open target app ↗</a>{% else %} · App URL is not set yet; edit the project after starting it.{% endif %}</p>
+  <div class="actions detail-actions"><a class="button button-secondary" href="{% url 'edit_test_case' test_case.pk %}">Edit test</a><a class="button button-secondary" href="{% url 'delete_test_case' test_case.pk %}">Delete test</a></div>
+  <div class="detail-field"><h4>Preconditions</h4><p>{{ test_case.preconditions|default:"No preconditions specified."|linebreaksbr }}</p></div>
+  <div class="detail-field"><h4>Steps to reproduce / execute</h4><p>{{ test_case.steps|default:"No steps specified."|linebreaksbr }}</p></div>
+  <div class="detail-field"><h4>Expected result</h4><p>{{ test_case.expected_result|linebreaksbr }}</p></div>
+  {% if test_case.is_active %}
+    {% if test_case.test_type == 'http' %}
+      {% if test_case.project.base_url %}
+        <div class="run-action"><div><strong>Automated HTTP check</strong><p class="muted">GET {{ test_case.project.base_url }}{{ test_case.path }}</p><small>Expected status: {{ test_case.expected_status }}{% if test_case.expected_text %} · Expected text: “{{ test_case.expected_text }}”{% endif %}</small></div><form method="post" action="{% url 'run_test' test_case.pk %}">{% csrf_token %}<button class="button">Run check now</button></form></div>
+      {% else %}
+        <div class="info-note"><strong>Project URL is missing</strong><p>Start this application, then <a href="{% url 'edit_project' test_case.project.pk %}">edit the project</a> to set its base URL before running this HTTP test.</p></div>
+      {% endif %}
+    {% else %}
+      <div class="manual-run"><h3>Record manual result</h3><p class="muted">Follow the steps above in the target application, then save the outcome here. The result will appear in this test's run history and the workspace dashboard.</p><form method="post" action="{% url 'record_manual_run' test_case.pk %}">{% csrf_token %}<label for="actual-result">Execution notes</label><textarea id="actual-result" name="actual_result" rows="3" placeholder="What happened? Include observed behavior, errors or evidence."></textarea><div class="actions"><button name="status" value="PASS" class="button button-success">✓ Mark PASS</button><button name="status" value="FAIL" class="button button-danger">✕ Mark FAIL</button><button name="status" value="ERROR" class="button button-secondary">Mark ERROR</button></div></form></div>
+    {% endif %}
+  {% endif %}
+</section>
+<section class="panel"><div class="section-heading"><div><h3>Run history</h3><p class="muted">{{ runs|length }} most recent recorded result(s)</p></div><a class="text-link" href="{% url 'run_list' %}">All runs →</a></div>
+{% for r in runs %}<article class="run-card"><div class="run-card-heading"><div><span class="pill pill-{{ r.status|lower }}">{{ r.status }}</span><strong>{{ r.created_at|date:"M j, Y · H:i:s" }}</strong></div><span class="muted">{{ r.duration_ms }} ms</span></div><div class="run-result-actions"><pre>{{ r.actual_result }}</pre><a class="text-link text-link-danger" href="{% url 'delete_run' r.pk %}">Delete this result</a></div></article>{% empty %}<div class="empty-state compact"><p>This test has not been run yet.</p></div>{% endfor %}</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local configuration and databases
+.env
+*.sqlite3
+
+# Test output
+.pytest_cache/
+.coverage
+htmlcov/
+playwright-report/
+test-results/
+artifacts/screenshots/*.png
+BugPilot/artifacts/screenshots/
+BugPilot/artifacts/diagnostics/
+
+# Django build output
+staticfiles/
+
+# Local tools and imported source files
+.idea/
+.vscode/
+BugPilot/uploaded_projects/

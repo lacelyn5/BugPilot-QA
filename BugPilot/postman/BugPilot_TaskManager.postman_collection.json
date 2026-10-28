@@ -1,0 +1,109 @@
+{
+  "info": {
+    "name": "BugPilot + Task Manager Smoke Checks",
+    "_postman_id": "bugpilot-taskmanager-http-checks-001",
+    "description": "HTTP checks for Task Management System web endpoints and the BugPilot JSON health endpoint. TaskManager has no dedicated REST API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Task Manager - Login page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{taskManagerUrl}}/accounts/login/",
+          "host": [
+            "{{taskManagerUrl}}"
+          ],
+          "path": [
+            "accounts",
+            "login",
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Login heading/content exists\", function () { pm.expect(pm.response.text()).to.include(\"Login\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task Manager - Registration page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{taskManagerUrl}}/register/",
+          "host": [
+            "{{taskManagerUrl}}"
+          ],
+          "path": [
+            "register",
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Registration content exists\", function () { pm.expect(pm.response.text()).to.include(\"Create Account\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BugPilot - Health endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{bugPilotUrl}}/api/health/",
+          "host": [
+            "{{bugPilotUrl}}"
+          ],
+          "path": [
+            "api",
+            "health",
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"JSON status is ok\", function () { pm.expect(pm.response.json().status).to.eql(\"ok\"); });"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "taskManagerUrl",
+      "value": "http://127.0.0.1:8001"
+    },
+    {
+      "key": "bugPilotUrl",
+      "value": "http://127.0.0.1:8000"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Run history · BugPilot{% endblock %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">EXECUTION HISTORY</p><h2>Test run history</h2><p class="muted">Every automated check and manually recorded result is saved here. Open a test to see its full history.</p></div><a class="button button-secondary" href="{% url 'test_list' %}">Browse test cases</a></section>
+<section class="panel"><div class="table-wrap"><table><thead><tr><th>Result</th><th>Test case</th><th>Project</th><th>Type</th><th>Duration</th><th>Recorded at</th><th>Action</th></tr></thead><tbody>
+{% for r in runs %}<tr><td><span class="pill pill-{{ r.status|lower }}">{{ r.status }}</span></td><td><a href="{% url 'test_detail' r.test_case.pk %}">{{ r.test_case.title }}</a><div class="mono muted">TC-{{ r.test_case.pk|stringformat:"03d" }}</div></td><td><a href="{% url 'project_detail' r.test_case.project.pk %}">{{ r.test_case.project.name }}</a></td><td><span class="pill">{{ r.test_case.get_test_type_display }}</span></td><td>{{ r.duration_ms }} ms</td><td>{{ r.created_at|date:"M j, Y · H:i:s" }}</td><td><a class="text-link text-link-danger" href="{% url 'delete_run' r.pk %}">Delete</a></td></tr>
+{% empty %}<tr><td colspan="7" class="empty-cell">No results yet. Run an automated check or record a manual test result.</td></tr>{% endfor %}</tbody></table></div><p class="muted table-footnote">Showing the latest 100 runs.</p></section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Import project ZIP · BugPilot{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'project_list' %}">Projects</a><span>/</span><span>Import ZIP</span></div>
+<section class="panel narrow form-panel">
+  <p class="eyebrow">ADD AN APPLICATION</p>
+  <h2>Import project from ZIP</h2>
+  <p class="muted">Choose a ZIP archive with your project's source files. BugPilot unpacks the files into its workspace and creates a project record for you.</p>
+  <div class="info-note upload-note"><strong>What happens after import?</strong><p>Your files are imported, not run. Start the application separately using its README or setup instructions, then edit the project and add the running app's URL before creating HTTP automated tests.</p></div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+      <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </p>
+    {% endfor %}
+    <div class="actions"><button class="button" type="submit">Import ZIP</button><a class="button button-secondary" href="{% url 'project_list' %}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

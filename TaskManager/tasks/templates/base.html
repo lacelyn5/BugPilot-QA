@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="{% static 'tasks/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">✓</div>
+            <div>
+                <h1>Task Manager</h1>
+                <p>Personal productivity dashboard</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'task_list' %}">Dashboard</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'task_create' %}">New Task</a>
+                {% if user.is_staff %}
+                    <a href="/admin/">Admin Panel</a>
+                {% endif %}
+            {% endif %}
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <span class="eyebrow">Task Dashboard</span>
+                <h2>Task Management System</h2>
+            </div>
+
+            <div class="user-panel">
+                {% if user.is_authenticated %}
+                    <span class="username">{{ user.username }}</span>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-light">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+                {% endif %}
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+
+        <footer>
+            <p>&copy; Maksim Kernazhytski — Task Manager Project</p>
+        </footer>
+    </main>
+</div>
+</body>
+</html>

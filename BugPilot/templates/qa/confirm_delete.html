@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ object_type }} · BugPilot{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'dashboard' %}">Overview</a><span>/</span><span>Confirm deletion</span></div>
+<section class="panel narrow form-panel delete-panel">
+  <span class="delete-icon" aria-hidden="true">!</span>
+  <p class="eyebrow">PERMANENT ACTION</p>
+  <h2>Delete {{ object_type }}?</h2>
+  <p class="delete-object-title">{{ object_title }}</p>
+  <p class="muted">{{ warning }}</p>
+  {% if related_summary %}<div class="delete-summary">{{ related_summary }}</div>{% endif %}
+  {% if error %}<div class="message message-error">{{ error }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {% if confirmation_name is not None %}
+      <label for="confirm-name">To confirm, type the project name exactly as shown above</label>
+      <input id="confirm-name" name="confirm_name" type="text" autocomplete="off" required>
+    {% else %}
+      <label class="confirm-checkbox"><input name="confirm_delete" type="checkbox" value="yes" required> I understand this deletion cannot be undone.</label>
+    {% endif %}
+    <div class="actions">
+      <button class="button button-danger" type="submit">Delete permanently</button>
+      <a class="button button-secondary" href="{{ cancel_url }}">{{ cancel_label }}</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

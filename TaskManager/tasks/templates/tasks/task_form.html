@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-page">
+    <div class="form-card">
+        <h2>{% if form.instance.pk %}Edit Task{% else %}Create Task{% endif %}</h2>
+        <p class="form-subtitle">Fill in the task details and save your changes.</p>
+
+        <form method="post" class="styled-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Task</button>
+                <a href="{% url 'task_list' %}" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

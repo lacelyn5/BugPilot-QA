@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}BUG-{{ bug.id|stringformat:"03d" }} · {{ bug.title }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{% url 'bug_list' %}">Bug reports</a><span>/</span><a href="{% url 'project_detail' bug.project.pk %}">{{ bug.project.name }}</a><span>/</span><span>BUG-{{ bug.id|stringformat:"03d" }}</span></div>
+<section class="panel detail-panel"><div class="detail-topline"><span class="mono">BUG-{{ bug.id|stringformat:"03d" }}</span><span class="pill severity-{{ bug.severity|lower }}">{{ bug.severity }}</span><span class="pill">{{ bug.status }}</span></div><div class="section-heading"><div><h2>{{ bug.title }}</h2><p class="muted">Reported {{ bug.created_at|date:"M j, Y · H:i" }} for <a href="{% url 'project_detail' bug.project.pk %}">{{ bug.project.name }}</a></p></div><div class="actions"><a class="button" href="{% url 'edit_bug' bug.pk %}">Edit bug / update status</a><a class="button button-secondary" href="{% url 'delete_bug' bug.pk %}">Delete bug</a></div></div>
+<div class="detail-field"><h4>Steps to reproduce</h4><p>{{ bug.steps_to_reproduce|linebreaksbr }}</p></div><div class="detail-field"><h4>Expected result</h4><p>{{ bug.expected_result|linebreaksbr }}</p></div><div class="detail-field"><h4>Actual result</h4><p>{{ bug.actual_result|linebreaksbr }}</p></div><div class="detail-field"><h4>Environment</h4><p>{{ bug.environment }}</p></div>
+</section>
+{% endblock %}

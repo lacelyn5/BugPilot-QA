@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-page">
+    <div class="form-card">
+        <h2>Login</h2>
+        <p class="form-subtitle">Sign in to access your task dashboard.</p>
+
+        <form method="post" class="styled-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary full-width">Login</button>
+        </form>
+
+        <p class="auth-link">No account yet? <a href="{% url 'register' %}">Create one</a></p>
+    </div>
+</section>
+{% endblock %}

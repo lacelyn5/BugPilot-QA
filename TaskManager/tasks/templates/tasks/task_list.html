@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-card">
+    <div>
+        <h2>My Tasks</h2>
+        <p>Manage your tasks, track progress, set deadlines, and organize work by priority.</p>
+    </div>
+    <a href="{% url 'task_create' %}" class="btn btn-primary">+ Create Task</a>
+</section>
+
+<section class="stats-grid">
+    <div class="stat-card">
+        <span>Total Tasks</span>
+        <strong>{{ total_tasks }}</strong>
+    </div>
+    <div class="stat-card completed-stat">
+        <span>Completed</span>
+        <strong>{{ completed_tasks }}</strong>
+    </div>
+    <div class="stat-card progress-stat">
+        <span>In Progress</span>
+        <strong>{{ in_progress_tasks }}</strong>
+    </div>
+</section>
+
+<section class="toolbar">
+    <form method="get" class="filter-form">
+        <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}">
+        <select name="status">
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All statuses</option>
+            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+            <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In progress</option>
+        </select>
+        <select name="priority">
+            <option value="all" {% if priority_filter == 'all' %}selected{% endif %}>All priorities</option>
+            <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High priority</option>
+            <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium priority</option>
+            <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low priority</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a href="{% url 'task_list' %}" class="btn btn-light">Reset</a>
+    </form>
+</section>
+
+<section class="task-grid">
+    {% for task in tasks %}
+        <article class="task-card {% if task.is_completed %}completed{% else %}in-progress{% endif %}">
+            <div class="task-card-header">
+                <span class="status-badge {% if task.is_completed %}status-completed{% else %}status-progress{% endif %}">
+                    {% if task.is_completed %}Completed{% else %}In progress{% endif %}
+                </span>
+                <span class="priority-badge priority-{{ task.priority }}">
+                    {{ task.get_priority_display }} priority
+                </span>
+            </div>
+
+            <h3>{{ task.title }}</h3>
+            <p class="task-description">{{ task.description|default:"No description provided." }}</p>
+
+            <div class="task-meta">
+                <span>Deadline:</span>
+                <strong>{% if task.due_date %}{{ task.due_date }}{% else %}No deadline{% endif %}</strong>
+            </div>
+
+            <div class="card-buttons">
+                <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Edit</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Delete</a>
+            </div>
+        </article>
+    {% empty %}
+        <div class="empty-state">
+            <h3>No tasks found</h3>
+            <p>Create your first task or adjust the search filters.</p>
+            <a href="{% url 'task_create' %}" class="btn btn-primary">Create Task</a>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

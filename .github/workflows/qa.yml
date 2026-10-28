@@ -1,0 +1,116 @@
+name: QA checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Django and browser regression tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BUGPILOT_ENVIRONMENT: CI
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Check Python syntax
+        run: python -m compileall -q BugPilot TaskManager
+
+      - name: Check TaskManager configuration and migrations
+        working-directory: TaskManager
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+
+      - name: Test TaskManager
+        working-directory: TaskManager
+        run: |
+          python manage.py migrate --noinput
+          python manage.py seed_qa
+          python manage.py test
+
+      - name: Check BugPilot configuration and migrations
+        working-directory: BugPilot
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+
+      - name: Test BugPilot
+        working-directory: BugPilot
+        run: |
+          python manage.py migrate --noinput
+          python manage.py seed_demo
+          python manage.py test
+
+      - name: Start TaskManager
+        working-directory: TaskManager
+        run: |
+          python manage.py runserver 127.0.0.1:8001 > /tmp/taskmanager.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8001/accounts/login/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/taskmanager.log
+          exit 1
+
+      - name: Start BugPilot
+        working-directory: BugPilot
+        run: |
+          python manage.py runserver 127.0.0.1:8000 > /tmp/bugpilot.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/api/health/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/bugpilot.log
+          exit 1
+
+      - name: Run Playwright tests
+        working-directory: BugPilot
+        env:
+          DJANGO_SETTINGS_MODULE: bugpilot.settings
+          BUGPILOT_BASE_URL: http://127.0.0.1:8000
+          TASK_MANAGER_BASE_URL: http://127.0.0.1:8001
+        run: python -m pytest automation -v
+
+      - name: Collect failure diagnostics
+        if: ${{ failure() }}
+        run: |
+          mkdir -p BugPilot/artifacts/diagnostics
+          if [ -f /tmp/taskmanager.log ]; then
+            cp /tmp/taskmanager.log BugPilot/artifacts/diagnostics/taskmanager.log
+          fi
+          if [ -f /tmp/bugpilot.log ]; then
+            cp /tmp/bugpilot.log BugPilot/artifacts/diagnostics/bugpilot.log
+          fi
+
+      - name: Upload failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-failure-diagnostics
+          if-no-files-found: ignore
+          path: BugPilot/artifacts/
